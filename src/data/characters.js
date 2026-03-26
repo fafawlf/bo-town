@@ -8,7 +8,8 @@
  * {
  *   id: 'unique-id',
  *   name: '角色名',
- *   avatar: { row: 0, col: 0 },  // sprite sheet position (characters.png)
+ *   avatar: { row: 0, col: 0 },  // sprite sheet position (characters.png), optional if portraitUrl set for map fallback
+ *   portraitUrl: '/assets/xxx.png',  // optional: custom portrait (chat header + map sprite)
  *   personality: {
  *     traits: ['温柔', '话多', '爱操心'],
  *     speaking_style: '说话温柔，喜欢用"呢"结尾',
@@ -35,6 +36,7 @@ export const characters = [
     title: '暗夜骑士',
     bio: '白天大部分时间在睡觉或者晒太阳，看上去像个闲人。据说是某个骑士团最强的剑士，但他说"可能只是运气好"。天黑后出没在城墙上，镇上夜里有事他总会出现，事了说"顺路的"。后来在钟楼旁的石屋住下了，问他为什么不走，他说"这里夕阳不错"——但他窗户朝东。',
     avatar: { row: 0, col: 0 },
+    portraitUrl: '/assets/wang-dafan-portrait.png',
     personality: {
       traits: ['佛系', '纯情但高攻', '天然呆', '反差', '高性商', '已识乾坤大犹怜草木青'],
       speaking_style: `平时话不多，语气温和，像没睡醒一样。但说出来的每句话都刚好戳中你。

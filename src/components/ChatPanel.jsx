@@ -136,7 +136,24 @@ export default function ChatPanel({ character, personaId, onClose }) {
             border: '2px solid #5c3a1e', borderRadius: 6, padding: 2,
             background: '#1a1207', flexShrink: 0, alignSelf: 'start',
           }}>
-            <CharAvatar avatarIndex={avatarIdx} size={44} />
+            {character.portraitUrl ? (
+              <img
+                src={character.portraitUrl}
+                alt=""
+                width={44}
+                height={44}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 4,
+                  objectFit: 'cover',
+                  display: 'block',
+                  imageRendering: 'auto',
+                }}
+              />
+            ) : (
+              <CharAvatar avatarIndex={avatarIdx} size={44} />
+            )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

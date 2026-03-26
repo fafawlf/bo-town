@@ -16,6 +16,7 @@ function adaptChar(char) {
     title: char.title || '',
     bio: char.bio || '',
     avatar: char.avatar,
+    portraitUrl: char.portraitUrl || null,
     district: char.town.district,
     districtName: DISTRICT_NAMES[char.town.district] || char.town.district,
     pos: char.town.spawn_tile,

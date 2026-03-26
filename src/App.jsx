@@ -228,15 +228,30 @@ function App() {
         });
       }
 
-      // Place characters on map
-      characters.forEach((char, i) => {
+      // Place characters on map (custom portraitUrl or sprite sheet)
+      for (let i = 0; i < characters.length; i++) {
+        const char = characters[i];
         const pos = char.pos || { x: 20 + i * 3, y: 16 };
         const container = new Container();
         container.x = pos[0] * TS;
         container.y = pos[1] * TS;
         container.zIndex = pos[1] * TS + TS;
 
-        const sprite = new Sprite(getCharFrame(i % 8));
+        let sprite;
+        if (char.portraitUrl) {
+          const ptex = await Assets.load(char.portraitUrl);
+          sprite = new Sprite(ptex);
+          const w = sprite.texture.width;
+          const h = sprite.texture.height;
+          const scale = TS / Math.max(w, h);
+          sprite.width = w * scale;
+          sprite.height = h * scale;
+          sprite.anchor.set(0.5, 1);
+          sprite.x = TS / 2;
+          sprite.y = TS;
+        } else {
+          sprite = new Sprite(getCharFrame(i % 8));
+        }
         container.addChild(sprite);
 
         // Name label
@@ -272,7 +287,7 @@ function App() {
         });
 
         entityLayer.addChild(container);
-      });
+      }
 
       // Player sprite — use characters.png avatar if persona is set, else player.png fallback
       const currentPersona = getPersona();
