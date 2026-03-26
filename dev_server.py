@@ -8,6 +8,7 @@ import io
 
 ROUTES = {
     "/api/chat": "api/chat.py",
+    "/api/health": "api/health.py",
     "/api/memory/extract": "api/memory/extract.py",
     "/api/letter/generate": "api/letter/generate.py",
     "/api/letter/daily": "api/letter/daily.py",

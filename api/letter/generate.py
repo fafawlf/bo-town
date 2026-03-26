@@ -1,10 +1,14 @@
 """Letter generation API - bots write letters to the user."""
 import json
 import os
+import sys
 import uuid
 from http.server import BaseHTTPRequestHandler
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+_api_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if _api_root not in sys.path:
+    sys.path.insert(0, _api_root)
+from envutil import get_anthropic_api_key
 LETTERS_DIR = os.path.join(os.path.dirname(__file__), '../../data/letters')
 MEMORY_DIR = os.path.join(os.path.dirname(__file__), '../../data/memories')
 
@@ -63,6 +67,11 @@ class handler(BaseHTTPRequestHandler):
 只返回信的内容，不要其他说明。"""
 
         try:
+            api_key = get_anthropic_api_key()
+            if not api_key:
+                self._respond(500, {"error": "ANTHROPIC_API_KEY not configured"})
+                return
+
             api_body = json.dumps({
                 "model": "claude-sonnet-4-20250514",
                 "max_tokens": 1000,
@@ -74,7 +83,7 @@ class handler(BaseHTTPRequestHandler):
                 data=api_body,
                 headers={
                     "Content-Type": "application/json",
-                    "x-api-key": ANTHROPIC_API_KEY,
+                    "x-api-key": api_key,
                     "anthropic-version": "2023-06-01",
                 }
             )

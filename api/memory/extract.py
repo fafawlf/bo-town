@@ -1,9 +1,13 @@
 """Memory reflect API — Rin-style: update user facts, relationship, diary, summary in one pass."""
 import json
 import os
+import sys
 from http.server import BaseHTTPRequestHandler
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+_api_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if _api_root not in sys.path:
+    sys.path.insert(0, _api_root)
+from envutil import get_anthropic_api_key
 
 
 class handler(BaseHTTPRequestHandler):
@@ -73,6 +77,9 @@ class handler(BaseHTTPRequestHandler):
 
     def _call_claude(self, prompt):
         import urllib.request
+        key = get_anthropic_api_key()
+        if not key:
+            raise RuntimeError("ANTHROPIC_API_KEY not configured")
         api_body = json.dumps({
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 1500,
@@ -84,7 +91,7 @@ class handler(BaseHTTPRequestHandler):
             data=api_body,
             headers={
                 "Content-Type": "application/json",
-                "x-api-key": ANTHROPIC_API_KEY,
+                "x-api-key": key,
                 "anthropic-version": "2023-06-01",
             }
         )

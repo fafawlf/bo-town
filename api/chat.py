@@ -1,9 +1,16 @@
 """Vercel Serverless: POST /api/town/chat — NPC chat via Claude API."""
 import json
 import os
+import sys
 from http.server import BaseHTTPRequestHandler
 
+_api_dir = os.path.dirname(os.path.abspath(__file__))
+if _api_dir not in sys.path:
+    sys.path.insert(0, _api_dir)
+
 import anthropic
+
+from envutil import get_anthropic_api_key
 
 
 class handler(BaseHTTPRequestHandler):
@@ -14,7 +21,7 @@ class handler(BaseHTTPRequestHandler):
         messages = body.get("messages", [])
         system_prompt = body.get("system_prompt", "")
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        api_key = get_anthropic_api_key()
         if not api_key:
             self.send_response(500)
             self.send_header("Content-Type", "application/json")
