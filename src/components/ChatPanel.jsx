@@ -32,7 +32,7 @@ function CharAvatar({ avatarIndex = 0, size = 48 }) {
 
 const EXTRACT_EVERY_N = 10;
 
-export default function ChatPanel({ character, personaId, onClose }) {
+export default function ChatPanel({ character, personaId, onClose, hideCloseButton = false }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -169,7 +169,9 @@ export default function ChatPanel({ character, personaId, onClose }) {
                   style={{ fontSize: 10, padding: '3px 7px' }}
                   onClick={() => { setShowDiary(!showDiary); setShowInfo(false); }}
                 >{showDiary ? '收起' : '日记'}</button>
-                <button className="rpg-btn" style={{ fontSize: 10, padding: '3px 7px' }} onClick={onClose}>✕</button>
+                {!hideCloseButton && (
+                  <button type="button" className="rpg-btn" style={{ fontSize: 10, padding: '3px 7px' }} onClick={onClose}>✕</button>
+                )}
               </div>
             </div>
             <div style={{ fontSize: 10, color: '#8b7355', marginTop: 4 }}>

@@ -472,6 +472,17 @@ function App() {
     setSelectedCharacter(null);
   };
 
+  // 手机全屏对话层打开时禁止背后滚动
+  useEffect(() => {
+    if (layoutNarrow && currentChar && screen === 'game') {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [layoutNarrow, currentChar, screen]);
+
   const unreadTotal = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
 
   return (
@@ -548,69 +559,172 @@ function App() {
         </div>
       </div>
 
-      {/* Chat / mailbox */}
-      <div className="app-side">
-        {/* Character list / Mailbox toggle */}
-        <div className="rpg-panel" style={{ margin: 8, padding: 8, display: 'flex', gap: 4 }}>
-          <button
-            onClick={() => setPanelMode('chat')}
-            className={panelMode === 'chat' ? 'rpg-btn rpg-btn-primary' : 'rpg-btn'}
-            style={{ flex: 1, fontSize: 11 }}
-          >
-            💬 对话
-          </button>
-          <div style={{ position: 'relative' }}>
+      {/* Chat / mailbox：桌面右侧栏；手机未选中角色时为底栏；选中后全屏 overlay */}
+      {!layoutNarrow ? (
+        <div className="app-side">
+          <div className="rpg-panel" style={{ margin: 8, padding: 8, display: 'flex', gap: 4 }}>
             <button
-              onClick={() => {
-                setPanelMode('mailbox');
-                if (unreadTotal > 0 && selectedCharacter) {
-                  markAsRead(selectedCharacter.uid);
-                }
-              }}
-              className={panelMode === 'mailbox' ? 'rpg-btn rpg-btn-primary' : 'rpg-btn'}
-              style={{ flex: 1, fontSize: 11, padding: '6px 16px' }}
+              onClick={() => setPanelMode('chat')}
+              className={panelMode === 'chat' ? 'rpg-btn rpg-btn-primary' : 'rpg-btn'}
+              style={{ flex: 1, fontSize: 11 }}
             >
-              📮 信箱
+              💬 对话
             </button>
-            <NotificationBadge count={unreadTotal} />
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  setPanelMode('mailbox');
+                  if (unreadTotal > 0 && selectedCharacter) {
+                    markAsRead(selectedCharacter.uid);
+                  }
+                }}
+                className={panelMode === 'mailbox' ? 'rpg-btn rpg-btn-primary' : 'rpg-btn'}
+                style={{ flex: 1, fontSize: 11, padding: '6px 16px' }}
+              >
+                📮 信箱
+              </button>
+              <NotificationBadge count={unreadTotal} />
+            </div>
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {panelMode === 'chat' && !currentChar ? (
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#8b7355',
+                  fontSize: 12,
+                  padding: 20,
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
+                在左边的小镇上点击角色来聊天
+              </div>
+            ) : panelMode === 'chat' && currentChar ? (
+              <ChatPanel character={currentChar} personaId={persona?.id} onClose={handleChatClose} />
+            ) : currentChar ? (
+              <Mailbox
+                characterId={currentChar.uid}
+                characterName={currentChar.name}
+                personaId={persona?.id}
+                onClose={() => setPanelMode('chat')}
+              />
+            ) : (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b7355' }}>
+                选择一个角色
+              </div>
+            )}
           </div>
         </div>
+      ) : (
+        screen === 'game' &&
+        !currentChar && (
+          <div className="app-side">
+            <div className="rpg-panel" style={{ margin: 8, padding: 8, display: 'flex', gap: 4 }}>
+              <button
+                onClick={() => setPanelMode('chat')}
+                className={panelMode === 'chat' ? 'rpg-btn rpg-btn-primary' : 'rpg-btn'}
+                style={{ flex: 1, fontSize: 11 }}
+              >
+                💬 对话
+              </button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => {
+                    setPanelMode('mailbox');
+                    if (unreadTotal > 0 && selectedCharacter) {
+                      markAsRead(selectedCharacter.uid);
+                    }
+                  }}
+                  className={panelMode === 'mailbox' ? 'rpg-btn rpg-btn-primary' : 'rpg-btn'}
+                  style={{ flex: 1, fontSize: 11, padding: '6px 16px' }}
+                >
+                  📮 信箱
+                </button>
+                <NotificationBadge count={unreadTotal} />
+              </div>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              {panelMode === 'chat' ? (
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#8b7355',
+                    fontSize: 12,
+                    padding: 20,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
+                  先点上方地图里的角色，再在这里聊天
+                </div>
+              ) : (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b7355' }}>
+                  选择一个角色
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      )}
 
-        {/* Panel content */}
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {panelMode === 'chat' && !currentChar ? (
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#8b7355',
-                fontSize: 12,
-                padding: 20,
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
-              {layoutNarrow ? '先点上方地图里的角色，再在这里聊天' : '在左边的小镇上点击角色来聊天'}
+      {layoutNarrow && screen === 'game' && currentChar && (
+        <div className="app-mobile-overlay" role="dialog" aria-modal="true" aria-label="对话与信箱">
+          <div className="app-mobile-overlay-inner">
+            <div className="app-mobile-overlay-bar">
+              <button type="button" className="app-mobile-overlay-close" onClick={handleChatClose} aria-label="关闭">
+                ✕
+              </button>
+              <span className="app-mobile-overlay-name">{currentChar.name}</span>
+              <div className="app-mobile-overlay-tabs">
+                <button
+                  type="button"
+                  className={panelMode === 'chat' ? 'active' : ''}
+                  onClick={() => setPanelMode('chat')}
+                >
+                  对话
+                </button>
+                <div className="app-mobile-overlay-mailbox-wrap">
+                  <button
+                    type="button"
+                    className={panelMode === 'mailbox' ? 'active' : ''}
+                    onClick={() => {
+                      setPanelMode('mailbox');
+                      if (unreadTotal > 0 && selectedCharacter) {
+                        markAsRead(selectedCharacter.uid);
+                      }
+                    }}
+                  >
+                    信箱
+                  </button>
+                  <NotificationBadge count={unreadTotal} />
+                </div>
+              </div>
             </div>
-          ) : panelMode === 'chat' && currentChar ? (
-            <ChatPanel character={currentChar} personaId={persona?.id} onClose={handleChatClose} />
-          ) : currentChar ? (
-            <Mailbox
-              characterId={currentChar.uid}
-              characterName={currentChar.name}
-              personaId={persona?.id}
-              onClose={() => setPanelMode('chat')}
-            />
-          ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b7355' }}>
-              选择一个角色
+            <div className="app-mobile-overlay-content">
+              {panelMode === 'chat' ? (
+                <ChatPanel character={currentChar} personaId={persona?.id} onClose={handleChatClose} hideCloseButton />
+              ) : (
+                <Mailbox
+                  characterId={currentChar.uid}
+                  characterName={currentChar.name}
+                  personaId={persona?.id}
+                  onClose={() => setPanelMode('chat')}
+                  hideOuterHeader
+                />
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {screen === 'select' && (
         <PersonaSelect

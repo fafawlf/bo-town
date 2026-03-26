@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getLetters } from '../utils/api.js';
 import { getReadLetterIds, markLetterRead } from '../utils/memory.js';
 
-export default function Mailbox({ characterId, characterName, personaId, onClose }) {
+export default function Mailbox({ characterId, characterName, personaId, onClose, hideOuterHeader = false }) {
   const [letters, setLetters] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,10 +48,12 @@ export default function Mailbox({ characterId, characterName, personaId, onClose
 
   return (
     <div className="flex flex-col h-full bg-amber-50 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-medium text-amber-900">📮 信箱</h2>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
-      </div>
+      {!hideOuterHeader && (
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-medium text-amber-900">📮 信箱</h2>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+      )}
       {loading ? (
         <div className="text-center text-gray-400 mt-8">加载中...</div>
       ) : letters.length === 0 ? (
