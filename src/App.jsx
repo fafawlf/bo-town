@@ -8,6 +8,7 @@ import Mailbox from './components/Mailbox';
 import BirthModal from './components/BirthModal';
 import PersonaSelect from './components/PersonaSelect';
 import NotificationBadge from './components/NotificationBadge';
+import MobileDpad from './components/MobileDpad';
 import {
   getUnreadCounts,
   addUnread,
@@ -44,6 +45,8 @@ function App() {
   const [persona, setPersona] = useState(() => getPersona());
   const [editingPersona, setEditingPersona] = useState(null);
   const musicRef = useRef(null);
+  /** Merged with WASD in Pixi ticker — for touch D-pad on phones */
+  const moveInputRef = useRef({ up: false, down: false, left: false, right: false });
 
   const characters = getCharacters();
 
@@ -163,6 +166,13 @@ function App() {
     return () => { cancelled = true; };
   }, [screen, persona?.id]);
 
+  // 离开游戏时松开虚拟方向键，避免卡住
+  useEffect(() => {
+    if (screen !== 'game') {
+      moveInputRef.current = { up: false, down: false, left: false, right: false };
+    }
+  }, [screen]);
+
   // PixiJS initialization
   useEffect(() => {
     if (appRef.current || screen !== 'game') return;
@@ -228,7 +238,7 @@ function App() {
         });
       }
 
-      // Place characters on map (custom portraitUrl or sprite sheet)
+      // Place characters on map — always pixel sprites (portraitUrl 仅用于聊天面板)
       for (let i = 0; i < characters.length; i++) {
         const char = characters[i];
         const pos = char.pos || { x: 20 + i * 3, y: 16 };
@@ -237,21 +247,7 @@ function App() {
         container.y = pos[1] * TS;
         container.zIndex = pos[1] * TS + TS;
 
-        let sprite;
-        if (char.portraitUrl) {
-          const ptex = await Assets.load(char.portraitUrl);
-          sprite = new Sprite(ptex);
-          const w = sprite.texture.width;
-          const h = sprite.texture.height;
-          const scale = TS / Math.max(w, h);
-          sprite.width = w * scale;
-          sprite.height = h * scale;
-          sprite.anchor.set(0.5, 1);
-          sprite.x = TS / 2;
-          sprite.y = TS;
-        } else {
-          sprite = new Sprite(getCharFrame(i % 8));
-        }
+        const sprite = new Sprite(getCharFrame(i % 8));
         container.addChild(sprite);
 
         // Name label
@@ -383,10 +379,11 @@ function App() {
       app.ticker.add(() => {
         let dx = 0,
           dy = 0;
-        if (keys['w'] || keys['arrowup']) dy = -3;
-        if (keys['s'] || keys['arrowdown']) dy = 3;
-        if (keys['a'] || keys['arrowleft']) dx = -3;
-        if (keys['d'] || keys['arrowright']) dx = 3;
+        const touch = moveInputRef.current;
+        if (keys['w'] || keys['arrowup'] || touch.up) dy = -3;
+        if (keys['s'] || keys['arrowdown'] || touch.down) dy = 3;
+        if (keys['a'] || keys['arrowleft'] || touch.left) dx = -3;
+        if (keys['d'] || keys['arrowright'] || touch.right) dx = 3;
 
         if (dx || dy) {
           playerSprite.x = Math.max(0, Math.min(mapW - TS, playerSprite.x + dx));
@@ -436,6 +433,7 @@ function App() {
     <div style={{ display: 'flex', height: '100vh', width: '100vw', background: '#1a1207' }}>
       {/* Canvas */}
       <div ref={canvasRef} style={{ flex: '0 0 70%', position: 'relative', overflow: 'hidden' }}>
+        {screen === 'game' && <MobileDpad inputRef={moveInputRef} />}
         {/* HUD */}
         <div
           style={{

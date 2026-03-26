@@ -8,8 +8,8 @@
  * {
  *   id: 'unique-id',
  *   name: '角色名',
- *   avatar: { row: 0, col: 0 },  // sprite sheet position (characters.png), optional if portraitUrl set for map fallback
- *   portraitUrl: '/assets/xxx.png',  // optional: custom portrait (chat header + map sprite)
+ *   avatar: { row: 0, col: 0 },  // 地图上 NPC 小人的 characters.png 格子
+ *   portraitUrl: '/assets/xxx.png',  // optional: 聊天面板头像；地图上仍用 avatar 精灵格
  *   personality: {
  *     traits: ['温柔', '话多', '爱操心'],
  *     speaking_style: '说话温柔，喜欢用"呢"结尾',
