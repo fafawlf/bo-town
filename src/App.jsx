@@ -47,10 +47,26 @@ function App() {
   const musicRef = useRef(null);
   /** Merged with WASD in Pixi ticker — for touch D-pad on phones */
   const moveInputRef = useRef({ up: false, down: false, left: false, right: false });
+  const resizeObserverRef = useRef(null);
+
+  const [layoutNarrow, setLayoutNarrow] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const onChange = () => setLayoutNarrow(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   const characters = getCharacters();
 
   const destroyPixi = useCallback(() => {
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+    }
     if (appRef.current) {
       appRef.current.destroy(true);
       appRef.current = null;
@@ -177,17 +193,32 @@ function App() {
   useEffect(() => {
     if (appRef.current || screen !== 'game') return;
     const init = async () => {
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const host = canvasRef.current;
+      if (!host) return;
+
+      let gw = Math.floor(host.clientWidth);
+      let gh = Math.floor(host.clientHeight);
+      if (gw < 16 || gh < 16) {
+        const narrow = window.matchMedia('(max-width: 768px)').matches;
+        gw = narrow ? window.innerWidth : Math.floor(window.innerWidth * 0.7);
+        gh = narrow ? Math.floor(window.innerHeight * 0.42) : window.innerHeight;
+      }
+
       const app = new Application();
       await app.init({
-        width: Math.floor(window.innerWidth * 0.7),
-        height: window.innerHeight,
+        width: Math.max(64, gw),
+        height: Math.max(64, gh),
         backgroundColor: isNight ? 0x1a1f2a : 0x4a7a3a,
         antialias: false,
         resolution: 1,
       });
       appRef.current = app;
-      canvasRef.current.appendChild(app.canvas);
+      host.appendChild(app.canvas);
       app.canvas.style.imageRendering = 'pixelated';
+      app.canvas.style.display = 'block';
+      app.canvas.style.width = '100%';
+      app.canvas.style.height = '100%';
 
       const world = new Container();
       app.stage.addChild(world);
@@ -345,6 +376,20 @@ function App() {
       };
       centerCamera();
 
+      const hostEl = canvasRef.current;
+      if (hostEl) {
+        const onHostResize = () => {
+          if (!appRef.current) return;
+          const nw = Math.max(1, Math.floor(hostEl.clientWidth));
+          const nh = Math.max(1, Math.floor(hostEl.clientHeight));
+          app.renderer.resize(nw, nh);
+          centerCamera();
+        };
+        const ro = new ResizeObserver(onHostResize);
+        ro.observe(hostEl);
+        resizeObserverRef.current = ro;
+      }
+
       // Drag to pan
       let dragging = false,
         ds = { x: 0, y: 0 };
@@ -430,12 +475,13 @@ function App() {
   const unreadTotal = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', background: '#1a1207' }}>
+    <div className="app-root">
       {/* Canvas */}
-      <div ref={canvasRef} style={{ flex: '0 0 70%', position: 'relative', overflow: 'hidden' }}>
+      <div ref={canvasRef} className="app-map">
         {screen === 'game' && <MobileDpad inputRef={moveInputRef} />}
         {/* HUD */}
         <div
+          className="app-hud"
           style={{
             position: 'absolute',
             top: 12,
@@ -448,8 +494,8 @@ function App() {
             pointerEvents: 'none',
           }}
         >
-          <div style={{ color: '#f0d78c', fontWeight: 'bold', fontSize: 18 }}>🎪 Bo-Town</div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="app-hud-title" style={{ color: '#f0d78c', fontWeight: 'bold', fontSize: 18 }}>🎪 Bo-Town</div>
+          <div className="app-hud-actions" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <div style={{ color: '#d4a24e', fontSize: 12 }}>{timeStr}</div>
             <button
               onClick={handleEditCurrent}
@@ -502,17 +548,8 @@ function App() {
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div
-        style={{
-          flex: '0 0 30%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: '#1a1207',
-          borderLeft: '2px solid #5c3a1e',
-          overflow: 'hidden',
-        }}
-      >
+      {/* Chat / mailbox */}
+      <div className="app-side">
         {/* Character list / Mailbox toggle */}
         <div className="rpg-panel" style={{ margin: 8, padding: 8, display: 'flex', gap: 4 }}>
           <button
@@ -556,7 +593,7 @@ function App() {
               }}
             >
               <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
-              在左边的小镇上点击角色来聊天
+              {layoutNarrow ? '先点上方地图里的角色，再在这里聊天' : '在左边的小镇上点击角色来聊天'}
             </div>
           ) : panelMode === 'chat' && currentChar ? (
             <ChatPanel character={currentChar} personaId={persona?.id} onClose={handleChatClose} />
