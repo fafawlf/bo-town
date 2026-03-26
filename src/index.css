@@ -1,0 +1,106 @@
+/* Utility classes (no Tailwind build needed) */
+
+:root {
+  --panel-bg: #2a1f14;
+  --panel-border: #5c3a1e;
+  --panel-inner: #3d2b1a;
+  --gold: #d4a24e;
+  --gold-light: #f0d78c;
+  --text-light: #e8d5b5;
+  --text-dim: #8b7355;
+  --accent-red: #c44b3f;
+  --accent-green: #5a9e4b;
+  --accent-blue: #4a7fb5;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1a1207;
+  color: var(--text-light);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+}
+
+canvas {
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
+}
+
+/* RPG Panel */
+.rpg-panel {
+  background: var(--panel-bg);
+  border: 3px solid var(--panel-border);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--panel-inner), 0 4px 12px rgba(0,0,0,0.5);
+  position: relative;
+}
+.rpg-panel::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid rgba(212,162,78,0.15);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* RPG Button */
+.rpg-btn {
+  background: linear-gradient(180deg, #5c3a1e 0%, #3d2b1a 100%);
+  border: 2px solid var(--gold);
+  color: var(--gold-light);
+  padding: 6px 16px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 3px;
+}
+.rpg-btn:hover {
+  background: linear-gradient(180deg, #7a4e2a 0%, #5c3a1e 100%);
+  border-color: var(--gold-light);
+  transform: translateY(-1px);
+}
+.rpg-btn-primary {
+  background: linear-gradient(180deg, #c44b3f 0%, #8b2e25 100%);
+  border-color: #e06050;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--panel-bg); }
+::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+
+/* Type badges */
+.type-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; border: 1px solid; }
+.type-therapist { background: rgba(233,30,99,0.15); border-color: #e91e63; color: #f48fb1; }
+.type-collector { background: rgba(25,118,210,0.15); border-color: #1976d2; color: #90caf9; }
+.type-architect { background: rgba(156,39,176,0.15); border-color: #9c27b0; color: #ce93d8; }
+.type-intensity { background: rgba(211,47,47,0.15); border-color: #d32f2f; color: #ef9a9a; }
+.type-compulsive { background: rgba(96,125,139,0.15); border-color: #607d8b; color: #90a4ae; }
+
+/* Cyber JD pulse animation */
+@keyframes cyber-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.cyber-pulse {
+  animation: cyber-pulse 1.2s ease-in-out infinite;
+}
+
+/* Intro modal animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
