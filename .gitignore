@@ -38,3 +38,4 @@ __pycache__/
 data/memories/*.json
 data/letters/*.json
 data/queue/*.json
+.vercel
